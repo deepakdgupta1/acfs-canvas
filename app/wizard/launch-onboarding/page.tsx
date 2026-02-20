@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { PartyPopper, BookOpen, ExternalLink, Sparkles, ArrowRight, GraduationCap, Terminal, RefreshCw, FolderPlus, FolderOpen } from "lucide-react";
+import { PartyPopper, BookOpen, ExternalLink, Sparkles, ArrowRight, GraduationCap, Terminal, RefreshCw, FolderPlus, FolderOpen, Stethoscope, KeyRound, ShieldCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { CommandCard, CodeBlock } from "@/components/command-card";
 import { AlertCard } from "@/components/alert-card";
@@ -148,24 +148,98 @@ export default function LaunchOnboardingPage() {
             <p className="text-muted-foreground">
               You can press{" "}
               <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">q</kbd> to skip it, or follow
-              the prompts to customize your terminal appearance.
+              the prompts to customize your terminal appearance. ACFS already configured sensible defaults,
+              so skipping is perfectly fine.
             </p>
           </div>
         </AlertCard>
 
+        {/* Step 1: Verify install */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Enter the sandbox</h2>
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Stethoscope className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-semibold">1. Verify the install</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Confirm everything installed correctly before entering the sandbox:
+          </p>
+          <CommandCard
+            command="acfs-local doctor"
+            description="Run ACFS health check — confirms all tools are installed"
+            runLocation="local"
+            showCheckbox
+            persistKey="local-doctor-launch"
+          />
+        </div>
+
+        {/* Step 2: Enter the sandbox */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Terminal className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-semibold">2. Enter the sandbox</h2>
+          </div>
           <CommandCard
             command="acfs-local shell"
-            description="Enter the ACFS sandbox"
+            description="Enter the ACFS sandbox shell"
             runLocation="local"
             showCheckbox
             persistKey="local-shell-launch"
           />
         </div>
 
+        {/* Step 3: Set up credentials */}
+        <Card className="border-[oklch(0.78_0.16_75/0.3)] bg-[oklch(0.78_0.16_75/0.08)] p-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <KeyRound className="h-6 w-6 text-[oklch(0.78_0.16_75)]" />
+              <h2 className="text-xl font-semibold">3. Set up credentials</h2>
+            </div>
+            <p className="text-muted-foreground">
+              <strong className="text-foreground">Inside the sandbox shell</strong>, run the services setup wizard
+              to authenticate all your AI tools and cloud services in one go:
+            </p>
+            <CommandCard
+              command="acfs services-setup"
+              description="Interactive credential setup for Claude Code, Codex, Gemini, and more"
+              runLocation="local"
+              showCheckbox
+              persistKey="local-services-setup-launch"
+            />
+            <GuideTip>
+              You don&apos;t need to authenticate everything right now. Start with{" "}
+              <strong>Claude Code</strong> and add the rest when you need them.
+              Run <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">cc</code> inside the sandbox to log in to Claude.
+            </GuideTip>
+          </div>
+        </Card>
+
+        {/* Step 4: Start a named session */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Run the onboarding tutorial</h2>
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <FolderPlus className="h-5 w-5" />
+            </div>
+            <h2 className="text-xl font-semibold">4. Start a named session</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Inside the sandbox, create a persistent <Jargon term="tmux">tmux</Jargon> session for your project:
+          </p>
+          <CommandCard
+            command="ntm new myproject"
+            description="Create a named tmux session (run inside the sandbox shell)"
+            runLocation="local"
+            showCheckbox
+            persistKey="local-ntm-launch"
+          />
+        </div>
+
+        {/* Step 5: Onboarding tutorial */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">5. Run the onboarding tutorial</h2>
           <CommandCard
             command="onboard"
             description="Start the interactive tutorial (run inside the sandbox shell)"
@@ -175,21 +249,246 @@ export default function LaunchOnboardingPage() {
           />
         </div>
 
-        <div className="space-y-4">
+        {/* Learning Hub CTA */}
+        <Card className="border-primary/20 bg-primary/5 p-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              <h2 className="text-xl font-semibold">Continue Your Learning Journey</h2>
+            </div>
+            <p className="text-muted-foreground">
+              Master your new environment with 9 guided lessons covering Linux basics,
+              tmux sessions, AI agents, and advanced workflows.
+            </p>
+            <Link href="/learn" onClick={() => trackConversion('learning_hub_started')}>
+              <Button size="lg" className="w-full sm:w-auto">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Start Learning Hub
+              </Button>
+            </Link>
+            <div className="flex items-center gap-2 pt-2 text-sm text-muted-foreground">
+              <Terminal className="h-4 w-4" />
+              <span>
+                Prefer the terminal? Run{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">onboard</code>{" "}
+                inside the sandbox for the CLI version.
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Daily Workflow */}
+        <Card className="border-[oklch(0.78_0.16_75/0.3)] bg-[oklch(0.78_0.16_75/0.05)] p-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-[oklch(0.78_0.16_75)]" />
+              <h2 className="text-xl font-semibold">Your Daily Workflow</h2>
+            </div>
+            <p className="text-muted-foreground">
+              Here&apos;s what working with your local sandbox looks like day-to-day:
+            </p>
+          </div>
+
+          <div className="mt-6 space-y-6">
+            <div className="flex gap-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[oklch(0.78_0.16_75)] text-[oklch(0.15_0.02_75)] font-bold">
+                1
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-medium">Enter the sandbox</h3>
+                <CommandCard command="acfs-local shell" runLocation="local" />
+                <p className="text-sm text-muted-foreground">Open a terminal and drop into the ACFS container.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[oklch(0.78_0.16_75)] text-[oklch(0.15_0.02_75)] font-bold">
+                2
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-medium">Resume or create a session</h3>
+                <div className="space-y-2">
+                  <CommandCard command="ntm list" description="See existing sessions" runLocation="local" />
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+                  <div className="flex-1">
+                    <CommandCard command="ntm attach myproject" description="Resume a session" runLocation="local" />
+                  </div>
+                  <div className="flex-1">
+                    <CommandCard command="ntm new myproject" description="Or create new" runLocation="local" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[oklch(0.78_0.16_75)] text-[oklch(0.15_0.02_75)] font-bold">
+                3
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-medium">Start coding with AI</h3>
+                <CommandCard command="cc" description="Launch Claude Code" runLocation="local" />
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[oklch(0.78_0.16_75)] text-[oklch(0.15_0.02_75)] font-bold">
+                4
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-medium">When you&apos;re done for the day</h3>
+                <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                  <div className="flex-1 rounded-lg border border-border/50 bg-card/50 p-3">
+                    <p className="text-sm text-muted-foreground mb-2">Detach from session:</p>
+                    <div className="flex items-center gap-1.5">
+                      <kbd className="rounded bg-muted px-2 py-1 font-mono text-sm">Ctrl</kbd>
+                      <span className="text-muted-foreground">+</span>
+                      <kbd className="rounded bg-muted px-2 py-1 font-mono text-sm">A</kbd>
+                      <span className="text-muted-foreground mx-1">then</span>
+                      <kbd className="rounded bg-muted px-2 py-1 font-mono text-sm">D</kbd>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <CommandCard command="exit" description="Leave the sandbox shell" runLocation="local" />
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  The container keeps running in the background. Come back tomorrow and everything is where you left it.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-lg border border-[oklch(0.78_0.16_75/0.3)] bg-[oklch(0.78_0.16_75/0.1)] p-4 text-center">
+            <p className="text-sm font-medium">
+              💡 <strong>Remember:</strong> Shell → Session → Code → Detach
+            </p>
+          </div>
+        </Card>
+
+        {/* Optional: dashboard */}
+        <div className="space-y-2">
           <h2 className="text-xl font-semibold">Open the dashboard (optional)</h2>
+          <p className="text-sm text-muted-foreground">Run from your host machine (outside the sandbox):</p>
           <CommandCard
             command="acfs-local dashboard"
-            description="Opens the local dashboard"
+            description="Opens the local ACFS dashboard"
             runLocation="local"
           />
         </div>
 
-        <div className="flex justify-end pt-4">
-          <Button asChild size="lg" disableMotion>
-            <Link href="/learn/welcome">
-              Start learning <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+        {/* Advanced: audit mode */}
+        <details className="group rounded-lg border border-border/40 bg-card/40 p-4">
+          <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            Advanced: audit mode (idempotency check)
+          </summary>
+          <div className="mt-3 space-y-3 pl-1">
+            <p className="text-sm text-muted-foreground">
+              Run the installer in audit mode to verify your sandbox is fully consistent without making any changes.
+              Useful after updates or if something seems off:
+            </p>
+            <CommandCard
+              command="acfs-local audit"
+              description="Check sandbox state without modifying anything"
+              runLocation="local"
+            />
+            <p className="text-xs text-muted-foreground">
+              Equivalent to running the installer with{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">--local --idempotency-audit</code>.
+              Reports drift between your sandbox and the expected ACFS state.
+            </p>
+          </div>
+        </details>
+
+        {/* Beginner Guide */}
+        <SimplerGuide>
+          <div className="space-y-6">
+            <GuideExplain term="What just happened?">
+              You&apos;ve set up a professional-grade AI coding environment inside an isolated LXD container
+              on your Ubuntu machine. Your host OS stays completely clean — all the tools, agents, and
+              databases live inside the sandbox.
+              <ul className="mt-3 space-y-2">
+                <li><strong>A powerful shell (zsh):</strong> Modern CLI with auto-suggestions and colors</li>
+                <li><strong>AI coding assistants:</strong> Claude Code, Codex, Gemini, and Amp CLI</li>
+                <li><strong>Development tools:</strong> tmux, ripgrep, lazygit, and more</li>
+                <li><strong>Programming languages:</strong> bun (JS/TS), uv (Python), Rust, Go</li>
+                <li><strong>Database:</strong> PostgreSQL 18, ready to use</li>
+              </ul>
+            </GuideExplain>
+
+            <GuideExplain term="What is acfs-local?">
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local</code> is a
+              thin wrapper that manages your ACFS LXD container from your host machine. Key commands:
+              <ul className="mt-2 list-disc list-inside space-y-1">
+                <li><code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local shell</code> — enter the container</li>
+                <li><code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local doctor</code> — health check</li>
+                <li><code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local status</code> — container status</li>
+                <li><code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local audit</code> — idempotency check</li>
+                <li><code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local dashboard</code> — open the dashboard</li>
+              </ul>
+            </GuideExplain>
+
+            <GuideSection title="Your First Steps">
+              <div className="space-y-4">
+                <GuideStep number={1} title="Run acfs-local doctor">
+                  Confirms every tool installed correctly. All green = you&apos;re good to go.
+                </GuideStep>
+                <GuideStep number={2} title="Enter the sandbox and authenticate">
+                  Run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local shell</code>,
+                  then <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs services-setup</code> to log in to Claude and other tools.
+                </GuideStep>
+                <GuideStep number={3} title="Create a project session">
+                  Run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">ntm new myproject</code> inside the sandbox to create a persistent workspace.
+                </GuideStep>
+                <GuideStep number={4} title="Start Claude Code">
+                  In your project folder, type <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">cc</code> and ask it to build something. The magic begins!
+                </GuideStep>
+              </div>
+            </GuideSection>
+
+            <GuideTip>
+              <strong>Bookmark this page!</strong> The command reference above covers everything you need
+              for day-to-day use. Once you&apos;re comfortable, head to the Learning Hub to master the
+              advanced multi-agent workflow.
+            </GuideTip>
+          </div>
+        </SimplerGuide>
+
+        {/* Continue to Part Two */}
+        <Card className="border-2 border-[oklch(0.7_0.2_330/0.3)] bg-gradient-to-r from-[oklch(0.7_0.2_330/0.05)] to-[oklch(0.75_0.18_195/0.05)] p-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-6 w-6 text-[oklch(0.7_0.2_330)]" />
+              <h2 className="text-xl font-semibold">Ready for the Advanced Workflow?</h2>
+            </div>
+            <p className="text-muted-foreground">
+              After completing the Learning Hub basics, dive into the powerful multi-agent
+              workflow — orchestrate parallel agents, use the &quot;best of all worlds&quot; planning
+              technique, and run agent swarms that build features while you sleep.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href="/learn" onClick={() => trackConversion('learning_hub_started')}>
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Start with Basics
+                </Button>
+              </Link>
+              <Link href="/workflow">
+                <Button size="lg" className="w-full sm:w-auto">
+                  Skip to Advanced
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+
+        {/* Final message */}
+        <div className="rounded-lg border-2 border-dashed border-primary/30 p-6 text-center">
+          <p className="text-lg font-medium">Happy coding!</p>
+          <p className="mt-1 text-muted-foreground">
+            Your agentic coding flywheel is ready to spin.
+          </p>
         </div>
       </div>
     );
