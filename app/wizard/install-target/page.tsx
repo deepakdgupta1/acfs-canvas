@@ -206,7 +206,7 @@ export default function InstallTargetPage() {
         <GuideTip>
           <div className="flex items-start gap-2">
             <HardDrive className="mt-0.5 h-4 w-4" />
-            <span>Local mode needs ~10GB disk space and Ubuntu 22.04+.</span>
+            <span>Local mode needs ~40GB disk space recommended (min ~20GB) and Ubuntu 22.04+.</span>
           </div>
         </GuideTip>
       </SimplerGuide>

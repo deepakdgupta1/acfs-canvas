@@ -24,7 +24,7 @@ import { Jargon } from "@/components/jargon";
 const VPS_PREFLIGHT_COMMAND =
   "curl -fsSL \"https://raw.githubusercontent.com/deepakdgupta1/agentic-coding/main/scripts/preflight.sh?$(date +%s)\" | bash";
 const LOCAL_PREFLIGHT_COMMAND =
-  "./scripts/local/lxd_bootstrap.sh --check";
+  "cd agentic-coding && ./scripts/local/lxd_bootstrap.sh --check";
 
 const VPS_TROUBLESHOOTING = [
   {
@@ -73,8 +73,9 @@ const LOCAL_TROUBLESHOOTING = [
   {
     title: "LXD not installed or not initialized",
     fixes: [
-      "Run: ./scripts/local/lxd_bootstrap.sh",
+      "Run: cd agentic-coding && ./scripts/local/lxd_bootstrap.sh",
       "This installs LXD (via snap) and initializes it for you",
+      "After bootstrap completes, run: acfs-local create",
     ],
   },
   {
@@ -94,8 +95,8 @@ const LOCAL_TROUBLESHOOTING = [
   {
     title: "Insufficient disk space",
     fixes: [
-      "Ensure ~10GB free on your Ubuntu machine",
-      "The container lives under your home directory by default",
+      "Ensure ~40GB free on your Ubuntu machine (minimum ~20GB)",
+      "The container and full ACFS install need significant disk space",
     ],
   },
   {
@@ -218,7 +219,7 @@ export default function PreflightCheckPage() {
         )}
         <CommandCard
           command={preflightCommand}
-          description={isLocal ? "Local pre-flight check (run from repo root)" : "ACFS pre-flight validation"}
+          description={isLocal ? "Enter repo and run local pre-flight check" : "ACFS pre-flight validation"}
           runLocation={isLocal ? "local" : "vps"}
           showCheckbox
           persistKey="preflight-check"

@@ -201,50 +201,70 @@ export default function StatusCheckPage() {
             <div>
               <h2 className="text-xl font-semibold">Authenticate your services</h2>
               <p className="text-sm text-muted-foreground">
-                Run these inside <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">acfs-local shell</code>
+                Use <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">acfs services-setup</code> for a guided credential workflow
               </p>
             </div>
           </div>
 
-          <AlertCard variant="info" icon={Laptop} title="Open a sandbox shell first">
-            <CommandCard
-              command="acfs-local shell"
-              description="Enter the sandbox shell"
-              runLocation="local"
-              showCheckbox
-              persistKey="local-shell-auth"
-            />
+          <AlertCard variant="info" icon={Laptop} title="Run services-setup inside the sandbox">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                The recommended way to authenticate all services at once is via the built-in setup wizard.
+                First enter the sandbox shell, then run the setup command:
+              </p>
+              <CommandCard
+                command="acfs-local shell"
+                description="Enter the sandbox shell"
+                runLocation="local"
+                showCheckbox
+                persistKey="local-shell-auth"
+              />
+              <CommandCard
+                command="acfs services-setup"
+                description="Interactive credential setup for all ACFS services"
+                runLocation="local"
+                showCheckbox
+                persistKey="local-services-setup"
+              />
+            </div>
           </AlertCard>
 
-          {(["access", "agent", "cloud"] as const).map((category) => {
-            const services = authServices[category];
-            if (services.length === 0) return null;
+          <details className="group rounded-lg border border-border/40 bg-card/40 p-3">
+            <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              Manual per-service auth (advanced)
+            </summary>
+            <div className="mt-3 space-y-4 pl-1">
+              {(["access", "agent", "cloud"] as const).map((category) => {
+                const services = authServices[category];
+                if (services.length === 0) return null;
 
-            return (
-              <div key={category} className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                    {AUTH_CATEGORY_ICONS[category]}
+                return (
+                  <div key={category} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                        {AUTH_CATEGORY_ICONS[category]}
+                      </div>
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        {CATEGORY_NAMES[category]}
+                      </h3>
+                    </div>
+                    <div className="space-y-2 pl-8">
+                      {services.map((service) => (
+                        <CommandCard
+                          key={service.id}
+                          command={service.postInstallCommand!}
+                          description={`Log in to ${service.name}`}
+                          runLocation="local"
+                          showCheckbox
+                          persistKey={`auth-${service.id}-local`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    {CATEGORY_NAMES[category]}
-                  </h3>
-                </div>
-                <div className="space-y-2 pl-8">
-                  {services.map((service) => (
-                    <CommandCard
-                      key={service.id}
-                      command={service.postInstallCommand!}
-                      description={`Log in to ${service.name}`}
-                      runLocation="local"
-                      showCheckbox
-                      persistKey={`auth-${service.id}-local`}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </details>
         </div>
 
         {/* Continue button */}

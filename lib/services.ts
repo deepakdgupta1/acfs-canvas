@@ -227,6 +227,44 @@ export const SERVICES: Service[] = [
     installedByAcfs: true,
     docsUrl: 'https://developers.cloudflare.com/',
   },
+
+  // Database & Infrastructure
+  {
+    id: 'postgresql',
+    name: 'PostgreSQL',
+    provider: 'PostgreSQL Global Development Group',
+    logo: '/logos/postgresql.svg',
+    category: 'devtools',
+    priority: 'recommended',
+    tier: 'recommended',
+    sortOrder: 2,
+    shortDescription: 'Local PostgreSQL 18 database server',
+    whyNeeded: 'Local Postgres instance for development and testing. Installed and configured by ACFS inside the sandbox.',
+    signupUrl: 'https://www.postgresql.org/',
+    supportsGoogleSso: false,
+    postInstallCommand: 'psql -U postgres -c "\\conninfo"',
+    installedByAcfs: true,
+    docsUrl: 'https://www.postgresql.org/docs/',
+  },
+
+  // Dicklesworthstone Stack
+  {
+    id: 'dcg',
+    name: 'DCG (Dev Credential Guard)',
+    provider: 'ACFS',
+    logo: '/logos/acfs.svg',
+    category: 'access',
+    priority: 'recommended',
+    tier: 'recommended',
+    sortOrder: 2,
+    shortDescription: 'Secure local credential manager for ACFS',
+    whyNeeded: 'DCG manages API keys and secrets for all ACFS services. Run acfs services-setup to configure credentials.',
+    signupUrl: 'https://github.com/deepakdgupta1/agentic-coding',
+    supportsGoogleSso: false,
+    postInstallCommand: 'acfs services-setup',
+    installedByAcfs: true,
+    docsUrl: 'https://github.com/deepakdgupta1/agentic-coding',
+  },
 ];
 
 // Helper functions

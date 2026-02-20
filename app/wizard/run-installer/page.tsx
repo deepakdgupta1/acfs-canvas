@@ -92,8 +92,7 @@ export default function RunInstallerPage() {
     () => buildInstallCommand(usePinnedRef, pinnedRef),
     [usePinnedRef, pinnedRef]
   );
-  const localCloneCommand = `git clone ${GITHUB_REPO}`;
-  const localInstallCommand = "cd agentic-coding && ./install.sh --local --yes";
+  const localInstallCommand = "acfs-local create";
 
   // Analytics tracking for this wizard step
   const { markComplete } = useWizardAnalytics({
@@ -231,21 +230,41 @@ export default function RunInstallerPage() {
 
         {isLocal ? (
           <div className="space-y-3">
-            <CommandCard
-              command={localCloneCommand}
-              description="Clone the ACFS repo (one-time)"
-              runLocation="local"
-              showCheckbox
-              persistKey="run-flywheel-local-clone"
-            />
+            <AlertCard variant="info" title="Repo already cloned in pre-flight">
+              <p className="text-sm text-muted-foreground">
+                If you completed the pre-flight check, the repo is already cloned and LXD is bootstrapped.
+                Just run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local create</code> below.
+              </p>
+            </AlertCard>
             <CommandCard
               command={localInstallCommand}
-              description="Install ACFS in a sandboxed LXD container"
+              description="Provision the LXD sandbox and install ACFS inside it"
               runLocation="local"
               showCheckbox
               persistKey="run-flywheel-installer"
               className="border-2 border-primary/20"
             />
+            {/* Advanced: ZFS storage path */}
+            <details className="group rounded-lg border border-border/40 bg-card/40 p-3">
+              <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                Advanced: custom ZFS storage pool
+              </summary>
+              <div className="mt-3 space-y-2 pl-1">
+                <p className="text-xs text-muted-foreground">
+                  If your machine has a dedicated ZFS pool, you can pass it to the installer for better
+                  container storage performance:
+                </p>
+                <CommandCard
+                  command="acfs-local create --zfs-pool YOUR_POOL_NAME"
+                  description="Use a specific ZFS storage pool (replace YOUR_POOL_NAME)"
+                  runLocation="local"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Find available ZFS pools with <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">zpool list</code>.
+                  Skip this if you&apos;re not using ZFS.
+                </p>
+              </div>
+            </details>
           </div>
         ) : (
           <CommandCard
@@ -433,15 +452,26 @@ export default function RunInstallerPage() {
 
       {/* Success signs */}
       <OutputPreview title="You'll know it's done when you see:">
-        <p className="text-[oklch(0.72_0.19_145)]">✔ Agent Flywheel installation complete!</p>
+        <p className="text-[oklch(0.72_0.19_145)]">✔ ACFS installation complete!</p>
         {isLocal ? (
-          <p className="text-muted-foreground">
-            Next: run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local shell</code>
-          </p>
+          <div className="space-y-1">
+            <p className="text-muted-foreground">
+              Next: run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local doctor</code> to verify,
+              then <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local shell</code> to enter the sandbox
+            </p>
+            <p className="text-muted-foreground text-xs">
+              Inside the sandbox: <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">ntm new myproject</code> to start a session
+            </p>
+          </div>
         ) : (
-          <p className="text-muted-foreground">
-            Please reconnect as: ssh ubuntu@YOUR_IP
-          </p>
+          <div className="space-y-1">
+            <p className="text-muted-foreground">
+              Please reconnect as: <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">ssh ubuntu@YOUR_IP</code>
+            </p>
+            <p className="text-muted-foreground text-xs">
+              Then run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs doctor</code> and <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">ntm new myproject</code>
+            </p>
+          </div>
         )}
       </OutputPreview>
 
@@ -456,20 +486,21 @@ export default function RunInstallerPage() {
 
             <GuideSection title="Step-by-Step">
               <div className="space-y-4">
-                <GuideStep number={1} title="Clone the repo (one time)">
-                  Run the <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">git clone</code> command above.
+                <GuideStep number={1} title="Run acfs-local create">
+                  This provisions the LXD container and installs ACFS inside it.
+                  If LXD isn&apos;t bootstrapped yet, run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">cd agentic-coding && ./scripts/local/lxd_bootstrap.sh</code> first.
                 </GuideStep>
-                <GuideStep number={2} title="Run the installer">
-                  From the repo root, run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">./install.sh --local --yes</code>.
+                <GuideStep number={2} title="Verify the install">
+                  Run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local doctor</code> to confirm all tools are healthy.
                 </GuideStep>
                 <GuideStep number={3} title="Enter the sandbox">
-                  After install, run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local shell</code>.
+                  Run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local shell</code>, then start a session with <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">ntm new myproject</code>.
                 </GuideStep>
               </div>
             </GuideSection>
 
             <GuideTip>
-              If you hit LXD errors, run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">./scripts/local/lxd_bootstrap.sh</code> and retry.
+              If LXD errors appear, run <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">cd agentic-coding && ./scripts/local/lxd_bootstrap.sh</code> and retry <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">acfs-local create</code>.
             </GuideTip>
           </div>
         </SimplerGuide>
@@ -516,7 +547,7 @@ export default function RunInstallerPage() {
                     <p className="text-[oklch(0.72_0.19_145)]">[3/8] Installing development tools...</p>
                     <p className="text-muted-foreground">... lots of download output ...</p>
                     <p className="text-[oklch(0.72_0.19_145)]">[8/8] Installing AI coding agents...</p>
-                    <p className="text-[oklch(0.72_0.19_145)] font-medium mt-1">✔ Agent Flywheel installation complete!</p>
+                    <p className="text-[oklch(0.72_0.19_145)] font-medium mt-1">✔ ACFS installation complete!</p>
                   </OutputPreview>
                   <p className="mt-3">
                     <strong>Don&apos;t close the terminal!</strong> Let it run until you see
